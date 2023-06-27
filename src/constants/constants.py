@@ -1,0 +1,1 @@
+MP_API_KEY = "5srf9fnUNYO2axnZBN1hYprUVtQT0Onh"
