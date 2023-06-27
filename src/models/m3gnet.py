@@ -1,6 +1,7 @@
 import warnings
 from m3gnet.models import M3GNet, Relaxer
 from pymatgen.io.cif import CifParser
+from pymatgen.core import Structure
 
 
 
@@ -10,9 +11,17 @@ for category in (UserWarning, DeprecationWarning):
 model = M3GNet.load()
 
 
+def predict_formation_energy(pymatgen_struct : Structure)-> float:
+
+    m3gnet_e_form = M3GNet.from_dir("/home/nawaf/workflows/superionic_ai/models/m3gnet_models/matbench_mp_e_form/0/m3gnet")
+    e_form_predict = m3gnet_e_form.predict_structure(pymatgen_struct)
+    return e_form_predict.numpy().tolist()[0].pop()
+
+
+
+
+
 def run_relax(structure):
-
-
     relaxer = Relaxer()  # This loads the default pre-trained model
 
     relax_results = relaxer.relax(
@@ -21,7 +30,7 @@ def run_relax(structure):
         steps = 500,
         traj_file = None,
         interval=1,
-        verbose=False,)
+        verbose=True,)
 
     final_structure = relax_results['final_structure']
     #Energy = float(relax_results['trajectory'].energies[-1]/len(structure))

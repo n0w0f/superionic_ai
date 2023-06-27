@@ -1,81 +1,67 @@
 
-import os
-from typing import List
+from typing import List,Tuple
 
-from models.m3gnet import run_relax
+from models.m3gnet import run_relax, predict_formation_energy
 from pymatgen.io.cif import CifWriter
-
-from data_prep.mp_query import mp_query_id
-from data_prep.structure_builder import query_structures_and_save
-from data_prep.pymatgen_actions import replace_atom_in_cif_folder
-
-from utils.read_yaml import read_material_compositions
-from utils.manage_files import substitute_element, create_folders_with_names, read_cif_files
+from pymatgen.core import Structure
 
 
-raw_save_path = "/home/nawaf/workflows/superionic_ai/src/data/raw_cifs"
+from data_prep.structure_builder import prepare_folders, substitute_materials
+from utils.manage_files import  get_all_cif_files
 
 
-atom_to_replace = "Li"
-replacement_atom = "Na"
 processed_save_path = "/home/nawaf/workflows/superionic_ai/src/data/processed_cifs"
 relaxed_save_path = "/home/nawaf/workflows/superionic_ai/src/data/relaxed_cifs"
 
-def prepare_data():
-    materials = read_material_compositions('/home/nawaf/workflows/superionic_ai/src/data/start_mat.yaml')
-    print(materials)
-
-    substituted_materials = substitute_element(materials, atom_to_replace, replacement_atom)
-    print(substituted_materials) 
-
-    create_folders_with_names(materials, raw_save_path)
-    create_folders_with_names(substituted_materials, processed_save_path) 
-    create_folders_with_names(substituted_materials, relaxed_save_path)     
-
-    for index in range(len(materials)):
 
 
-        #given a material composition returns list if mpids of different structures with same composition
-        material_ids = mp_query_id(materials[index])
+def workflow()-> Tuple[List[str],List[str]]:
 
-        #path where raw cifs would be stored
-        raw_cif_save_path = os.path.join(raw_save_path,materials[index])
-        print(raw_cif_save_path)
+    relaxed_file_names: List[str] = []
+    unrelaxed_file_names: List[str] = []
+    formation_e: List[float] = []
 
-        # query structures using mp-api and save in respective folders
-        query_structures_and_save(material_ids, raw_cif_save_path)
+    # Iterate over processed CIFs
+    cif_files = get_all_cif_files(processed_save_path)
+    for cif_file in cif_files:
+
+        updated_cif_filename = cif_file.replace("_updated.cif","_relaxed.cif") 
+        relaxed_cif_filename = updated_cif_filename.replace(processed_save_path,relaxed_save_path)
         
-        #path where substituted cifs would be stored
-        processed_cif_save_path = os.path.join(processed_save_path,substituted_materials[index])
-        print(processed_cif_save_path)
+        # Read the unrelaxed structure from the processed CIF
+        unrelaxed_structure = Structure.from_file(cif_file)
+        unrelaxed_file_names.append(cif_file)
 
-        # substitute all the cifs in the raw cif folders with given atom and store in serperate directories
-        replace_atom_in_cif_folder(raw_cif_save_path, atom_to_replace, replacement_atom, processed_cif_save_path)
+        # Perform geometry optimization (relaxation) on the unrelaxed structure
+        relaxed_structure = run_relax(unrelaxed_structure)
 
+        cif_writer = CifWriter(relaxed_structure)
+        cif_writer.write_file(relaxed_cif_filename)
+        relaxed_file_names.append(relaxed_cif_filename)
 
+        # Perform formation energy prediction on the relaxed structure
+        fe = predict_formation_energy(relaxed_structure)
+        formation_e.append(fe)
+        print(f"calculating formation energy  {fe}")
+        
 
-# function to relax the structures
-def geometry_optimize(unrelaxed_structure, filename):
-    relaxed_struct = run_relax(unrelaxed_structure)
-    updated_cif_path = filename.replace(processed_save_path,relaxed_save_path)
-    print(updated_cif_path)
-    cif_writer = CifWriter(relaxed_struct)
-    cif_writer.write_file(updated_cif_path)
-
-
-    
+    return relaxed_file_names, unrelaxed_file_names,formation_e
 
 
 
 
 if __name__ == "__main__":
-    
         
-    prepare_data()
-    structures,filenames = read_cif_files(processed_save_path)
-    print(filenames)
-    for i in range(len(structures)):
-        geometry_optimize(structures[i],filenames[i])
+    #materials,substituted_materials = prepare_folders()
+
+    #sub_cif_files = substitute_materials(materials,substituted_materials)
+
+    relaxed_file_names, unrelaxed_file_names, formation_e_list =  workflow()
+    print(relaxed_file_names)
+    print(formation_e_list)
+
+ 
+
 
 
 
