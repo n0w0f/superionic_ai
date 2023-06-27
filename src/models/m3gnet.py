@@ -26,16 +26,17 @@ def predict_bandgap(pymatgen_struct : Structure, config : dict)-> float:
 
 
 
-def run_relax(structure):
+def run_relax(structure: Structure , config : dict) -> Structure :
     relaxer = Relaxer()  # This loads the default pre-trained model
 
     relax_results = relaxer.relax(
         structure,    
-        fmax = 0.1,
-        steps = 500,
-        traj_file = None,
-        interval=1,
-        verbose=True,)
+        fmax = config['fmax'],
+        steps = config['steps'],
+        traj_file = config['traj_file'],
+        interval = config['interval'],
+        verbose = config['verbose'],
+        )
 
     final_structure = relax_results['final_structure']
     #Energy = float(relax_results['trajectory'].energies[-1]/len(structure))

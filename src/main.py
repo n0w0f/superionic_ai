@@ -18,11 +18,6 @@ config_path = os.path.join("..", "config", "config.yaml")
 with open(config_path, 'r') as file:
     config_data = yaml.safe_load(file)
 
-# Access the required paths from the config data
-# processed_save_path = config_data['path']['processed_save_path']
-# relaxed_save_path = config_data['path']['relaxed_save_path']
-
-
 
 def workflow(config : dict)-> Tuple[List[str],List[str]]:
 
@@ -47,7 +42,7 @@ def workflow(config : dict)-> Tuple[List[str],List[str]]:
         unrelaxed_file_names.append(cif_file)
 
         # Perform geometry optimization (relaxation) on the unrelaxed structure
-        relaxed_structure = run_relax(unrelaxed_structure)
+        relaxed_structure = run_relax(unrelaxed_structure, config['model']['m3gnet']['relaxer'])
 
         cif_writer = CifWriter(relaxed_structure)
         cif_writer.write_file(relaxed_cif_filename)
@@ -71,11 +66,12 @@ def workflow(config : dict)-> Tuple[List[str],List[str]]:
 
 if __name__ == "__main__":
         
-    materials,substituted_materials = prepare_folders(config_data['data']['path'] , config_data['data']['substitution'] )
+    # materials,substituted_materials = prepare_folders(config_data['data']['path'] , config_data['data']['substitution'] )
 
-    sub_cif_files = substitute_materials(materials,substituted_materials,config_data['data']['path'] , config_data['data']['substitution'])
+    # sub_cif_files = substitute_materials(materials,substituted_materials,config_data['data']['path'] , config_data['data']['substitution'])
 
     relaxed_file_names, unrelaxed_file_names, formation_e_list, bandgap_list =  workflow(config_data)
+
     print(relaxed_file_names)
     print(formation_e_list)
 
