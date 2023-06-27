@@ -1,8 +1,9 @@
 import os
 from pymatgen.io.cif import CifParser, CifWriter
 from pymatgen.core.structure import Structure
+from typing import List
 
-def replace_atom_in_cif_folder(cif_folder_path: str, atom_to_replace: str, replacement_atom: str, save_path: str) -> None:
+def replace_atom_in_cif_folder(cif_folder_path: str, atom_to_replace: str, replacement_atom: str, save_path: str) -> List[str]:
     """
     Replace an atom in CIF structures within a folder and save the updated structures as CIF files.
 
@@ -16,6 +17,7 @@ def replace_atom_in_cif_folder(cif_folder_path: str, atom_to_replace: str, repla
         None
     """
     cif_files = [f for f in os.listdir(cif_folder_path) if f.endswith(".cif")]
+    file_names: List[str] = []
 
     for cif_file in cif_files:
         cif_file_path = os.path.join(cif_folder_path, cif_file)
@@ -32,3 +34,5 @@ def replace_atom_in_cif_folder(cif_folder_path: str, atom_to_replace: str, repla
 
         cif_writer = CifWriter(structure)
         cif_writer.write_file(updated_cif_path)
+        file_names.append(updated_cif_path)
+    return file_names

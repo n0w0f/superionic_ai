@@ -3,6 +3,25 @@ import os
 from pymatgen.core import Structure
 
 
+def get_all_cif_files(parent_directory):
+    """
+    Recursively get all CIF files inside subdirectories within a parent directory.
+    Args:
+        parent_directory (str): The parent directory to search for CIF files.
+    Returns:
+        list: A list of file paths to CIF files.
+    """
+    cif_files = []
+    
+    for root, dirs, files in os.walk(parent_directory):
+        for file in files:
+            if file.endswith(".cif"):
+                file_path = os.path.join(root, file)
+                cif_files.append(file_path)
+
+    return cif_files
+
+
 def create_folders_with_names(elements: List[str], root_path: str):
     """
     Create folders with names corresponding to the elements in the given list at the specified root path.
