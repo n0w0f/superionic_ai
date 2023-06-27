@@ -1,7 +1,7 @@
 
 from typing import List,Tuple
 
-from models.m3gnet import run_relax, predict_formation_energy
+from models.m3gnet import run_relax, predict_formation_energy,predict_bandgap
 from pymatgen.io.cif import CifWriter
 from pymatgen.core import Structure
 
@@ -20,6 +20,7 @@ def workflow()-> Tuple[List[str],List[str]]:
     relaxed_file_names: List[str] = []
     unrelaxed_file_names: List[str] = []
     formation_e: List[float] = []
+    bandgaps: List[float] = []
 
     # Iterate over processed CIFs
     cif_files = get_all_cif_files(processed_save_path)
@@ -43,9 +44,14 @@ def workflow()-> Tuple[List[str],List[str]]:
         fe = predict_formation_energy(relaxed_structure)
         formation_e.append(fe)
         print(f"calculating formation energy  {fe}")
+
+        # Perform bandgap prediction on the relaxed structure
+        bg = predict_bandgap(relaxed_structure)
+        bandgaps.append(bg)
+        print(f"calculating formation energy  {bg}")
         
 
-    return relaxed_file_names, unrelaxed_file_names,formation_e
+    return relaxed_file_names, unrelaxed_file_names,formation_e, bandgaps
 
 
 
@@ -56,7 +62,7 @@ if __name__ == "__main__":
 
     #sub_cif_files = substitute_materials(materials,substituted_materials)
 
-    relaxed_file_names, unrelaxed_file_names, formation_e_list =  workflow()
+    relaxed_file_names, unrelaxed_file_names, formation_e_list, bandgap_list =  workflow()
     print(relaxed_file_names)
     print(formation_e_list)
 

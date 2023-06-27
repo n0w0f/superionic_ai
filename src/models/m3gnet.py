@@ -17,6 +17,11 @@ def predict_formation_energy(pymatgen_struct : Structure)-> float:
     e_form_predict = m3gnet_e_form.predict_structure(pymatgen_struct)
     return e_form_predict.numpy().tolist()[0].pop()
 
+def predict_bandgap(pymatgen_struct : Structure)-> float:
+
+    m3gnet_bgap = M3GNet.from_dir("/home/nawaf/workflows/superionic_ai/models/m3gnet_models/matbench_mp_gap/0/m3gnet")
+    bgap_predict = m3gnet_bgap.predict_structure(pymatgen_struct)
+    return bgap_predict.numpy().tolist()[0].pop()
 
 
 
