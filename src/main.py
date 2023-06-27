@@ -1,4 +1,5 @@
-
+import os
+import yaml
 from typing import List,Tuple
 
 from models.m3gnet import run_relax, predict_formation_energy,predict_bandgap
@@ -10,12 +11,24 @@ from data_prep.structure_builder import prepare_folders, substitute_materials
 from utils.manage_files import  get_all_cif_files
 
 
-processed_save_path = "/home/nawaf/workflows/superionic_ai/src/data/processed_cifs"
-relaxed_save_path = "/home/nawaf/workflows/superionic_ai/src/data/relaxed_cifs"
+# Specify the path to the config.yaml file
+config_path = os.path.join("..", "config", "config.yaml")
+
+# Read the config.yaml file
+with open(config_path, 'r') as file:
+    config_data = yaml.safe_load(file)
+
+# Access the required paths from the config data
+# processed_save_path = config_data['path']['processed_save_path']
+# relaxed_save_path = config_data['path']['relaxed_save_path']
 
 
 
-def workflow()-> Tuple[List[str],List[str]]:
+def workflow(config : dict)-> Tuple[List[str],List[str]]:
+
+    processed_save_path = config['data']['path']['processed_save_path']
+    relaxed_save_path = config['data']['path']['relaxed_save_path']
+
 
     relaxed_file_names: List[str] = []
     unrelaxed_file_names: List[str] = []
@@ -41,12 +54,12 @@ def workflow()-> Tuple[List[str],List[str]]:
         relaxed_file_names.append(relaxed_cif_filename)
 
         # Perform formation energy prediction on the relaxed structure
-        fe = predict_formation_energy(relaxed_structure)
+        fe = predict_formation_energy(relaxed_structure, config['model']['m3gnet'])
         formation_e.append(fe)
         print(f"calculating formation energy  {fe}")
 
         # Perform bandgap prediction on the relaxed structure
-        bg = predict_bandgap(relaxed_structure)
+        bg = predict_bandgap(relaxed_structure, config['model']['m3gnet'])
         bandgaps.append(bg)
         print(f"calculating formation energy  {bg}")
         
@@ -58,11 +71,11 @@ def workflow()-> Tuple[List[str],List[str]]:
 
 if __name__ == "__main__":
         
-    #materials,substituted_materials = prepare_folders()
+    materials,substituted_materials = prepare_folders(config_data['data']['path'] , config_data['data']['substitution'] )
 
-    #sub_cif_files = substitute_materials(materials,substituted_materials)
+    sub_cif_files = substitute_materials(materials,substituted_materials,config_data['data']['path'] , config_data['data']['substitution'])
 
-    relaxed_file_names, unrelaxed_file_names, formation_e_list, bandgap_list =  workflow()
+    relaxed_file_names, unrelaxed_file_names, formation_e_list, bandgap_list =  workflow(config_data)
     print(relaxed_file_names)
     print(formation_e_list)
 
