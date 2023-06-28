@@ -6,6 +6,7 @@ data:
     processed_save_path: "/home/nawaf/workflows/superionic_ai/src/data/processed_cifs"
     relaxed_save_path: "/home/nawaf/workflows/superionic_ai/src/data/relaxed_cifs"
     raw_save_path: "/home/nawaf/workflows/superionic_ai/src/data/raw_cifs"
+    md_traj_save_path: "/home/nawaf/workflows/superionic_ai/src/data/md_logs"
 
   substitution:
     atom_to_replace: "Li"

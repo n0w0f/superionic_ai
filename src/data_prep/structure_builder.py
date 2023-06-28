@@ -31,6 +31,9 @@ def prepare_folders(config : dict, config_substi : dict )-> Tuple[List[str], Lis
     # Create folders for relaxed CIFs
     create_folders_with_names(substituted_materials, config['relaxed_save_path'])
 
+    # Create folders for md trajectories and logs
+    create_folders_with_names(substituted_materials, config['md_traj_save_path'])
+
     return materials,substituted_materials
 
 
