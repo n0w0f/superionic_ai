@@ -35,6 +35,9 @@ def prepare_folders(config : dict, config_substi : dict )-> Tuple[List[str], Lis
 
 
 def substitute_materials(materials : List[str], substituted_materials : List[str],config : dict, config_substi : dict):
+
+    raw_cif_paths : List[str] = []
+    substituted_cif_paths : List[str] = []
     # Iterate over materials
     for index,material in enumerate(materials):
 
@@ -47,15 +50,20 @@ def substitute_materials(materials : List[str], substituted_materials : List[str
 
         # Query structures using mp-api and save in respective folders
         raw_file_names = query_structures_and_save(material_ids, raw_cif_save_path)
-        print(raw_file_names)
+        raw_cif_paths.extend(raw_file_names)
+
 
         # Path where substituted CIFs would be stored
         processed_cif_save_path = os.path.join( config['processed_save_path'], substituted_materials[index])
-
+        
         # Substitute all the CIFs in the raw CIF folders with the given atom and store in separate directories
         sub_cif_files = replace_atom_in_cif_folder(raw_cif_save_path, config_substi['atom_to_replace'], config_substi['replacement_atom'], processed_cif_save_path)
-        print(sub_cif_files)
-    print("Substitution Finished !!! ")
+        substituted_cif_paths.extend(sub_cif_files)
+
+        print(" Finished Substitution !!!!!")
+        
+    return raw_cif_paths , substituted_cif_paths
+    
     
 
 def query_structures_and_save(material_ids: list, save_path: str, mp_api_key: str = MP_API_KEY) ->  List[str]:

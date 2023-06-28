@@ -19,7 +19,7 @@ with open(config_path, 'r') as file:
     config_data = yaml.safe_load(file)
 
 
-def workflow(config : dict)-> Tuple[List[str],List[str]]:
+def workflow(cif_files : List[str], config : dict)-> Tuple[List[str],List[str]]:
 
     processed_save_path = config['data']['path']['processed_save_path']
     relaxed_save_path = config['data']['path']['relaxed_save_path']
@@ -66,14 +66,16 @@ def workflow(config : dict)-> Tuple[List[str],List[str]]:
 
 if __name__ == "__main__":
         
-    # materials,substituted_materials = prepare_folders(config_data['data']['path'] , config_data['data']['substitution'] )
+    materials,substituted_materials = prepare_folders(config_data['data']['path'] , config_data['data']['substitution'] )
 
-    # sub_cif_files = substitute_materials(materials,substituted_materials,config_data['data']['path'] , config_data['data']['substitution'])
+    raw_cif_paths , substituted_cif_paths = substitute_materials(materials,substituted_materials,config_data['data']['path'] , config_data['data']['substitution'])
+    print(raw_cif_paths)
+    print(substituted_cif_paths)
 
-    relaxed_file_names, unrelaxed_file_names, formation_e_list, bandgap_list =  workflow(config_data)
+    relaxed_file_names, unrelaxed_file_names, formation_e_list, bandgap_list =  workflow(substituted_cif_paths, config_data)
 
-    print(relaxed_file_names)
-    print(formation_e_list)
+    # print(relaxed_file_names)
+    # print(formation_e_list)
 
  
 
