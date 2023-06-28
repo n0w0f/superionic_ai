@@ -3,6 +3,25 @@ import os
 from pymatgen.core import Structure
 
 
+import json
+from dataclasses import asdict
+
+
+def save_dataclass_list_to_json(data_list, save_path):
+    """
+    Save a list of data class objects to a JSON file.
+
+    Args:
+        data_list (List): List of data class objects.
+        save_path (str): Path to save the JSON file.
+    """
+    json_data = [asdict(data) for data in data_list]
+
+    with open(save_path, 'w') as json_file:
+        json.dump(json_data, json_file, indent=4)
+
+
+
 def get_all_cif_files(parent_directory):
     """
     Recursively get all CIF files inside subdirectories within a parent directory.
