@@ -1,6 +1,7 @@
 data:
 
   path:
+    results: "/home/nawaf/workflows/superionic_ai/src/data/json/data.json"
     starter_materials: "/home/nawaf/workflows/superionic_ai/src/data/start_mat.yaml"
     processed_save_path: "/home/nawaf/workflows/superionic_ai/src/data/processed_cifs"
     relaxed_save_path: "/home/nawaf/workflows/superionic_ai/src/data/relaxed_cifs"
@@ -24,6 +25,16 @@ model:
       traj_file: None
       interval: 1
       verbose: True
+
+    md_dynamics:
+      temperature: 600
+      ensemble: 'nvt'  # NVT ensemble
+      timestep: 1  # femto second
+      loginterval: 100   # interval for recording the log
+      trajectory: None
+      logfile: None
+      steps: 100
+
 
 workflow:
 
