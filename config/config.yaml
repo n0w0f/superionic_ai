@@ -27,14 +27,7 @@ model:
       interval: 1
       verbose: True
 
-    md_dynamics:
-      temperature: 600
-      ensemble: 'nvt'  # NVT ensemble
-      timestep: 1  # femto second
-      loginterval: 100   # interval for recording the log
-      trajectory: None
-      logfile: None
-      steps: 100
+
 
 
 workflow:
@@ -42,6 +35,16 @@ workflow:
   screen_cutoffs:
     formation_energy: 0.0
     bandgap: 1.0
+
+  md_dynamics:
+    list_of_temp: [600 , 800 , 1000]
+    temperature: None
+    ensemble: 'nvt'  # NVT ensemble
+    timestep: 1  # femto second
+    loginterval: 100   # interval for recording the log
+    trajectory: None
+    logfile: None
+    steps: 100
 
 
 
