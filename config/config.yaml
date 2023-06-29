@@ -1,0 +1,56 @@
+data:
+
+  path:
+    results: "/home/nawaf/workflows/superionic_ai/src/data/json/data.json"
+    starter_materials: "/home/nawaf/workflows/superionic_ai/src/data/start_mat.yaml"
+    processed_save_path: "/home/nawaf/workflows/superionic_ai/src/data/processed_cifs"
+    relaxed_save_path: "/home/nawaf/workflows/superionic_ai/src/data/relaxed_cifs"
+    raw_save_path: "/home/nawaf/workflows/superionic_ai/src/data/raw_cifs"
+    md_traj_save_path: "/home/nawaf/workflows/superionic_ai/src/data/md_logs"
+
+  substitution:
+    atom_to_replace: "Li"
+    replacement_atom: "Na"
+
+
+model:
+
+  m3gnet:
+    checkpoints: 
+      formation_energy_checkpoint: "/home/nawaf/workflows/superionic_ai/models/m3gnet_models/matbench_mp_e_form/0/m3gnet"
+      bandgap_checkpoint: "/home/nawaf/workflows/superionic_ai/models/m3gnet_models/matbench_mp_gap/0/m3gnet"
+    
+    relaxer:
+      fmax: 0.1
+      steps: 500
+      traj_file: None
+      interval: 1
+      verbose: True
+
+
+
+
+workflow:
+
+  screen_cutoffs:
+    formation_energy: 0.0
+    bandgap: 1.0
+
+  md_dynamics:
+    list_of_temp: [600 , 800 , 1000]
+    temperature: None
+    ensemble: 'nvt'  # NVT ensemble
+    timestep: 1  # femto second
+    loginterval: 100   # interval for recording the log
+    trajectory: None
+    logfile: None
+    steps: 100
+
+
+
+
+
+
+    
+  
+  
