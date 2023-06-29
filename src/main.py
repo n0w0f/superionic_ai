@@ -5,6 +5,7 @@ from dataclasses import dataclass, field
 
 from models.m3gnet import run_relax, predict_formation_energy,predict_bandgap
 from models.screen import check_conductivity, check_stability
+from models.dynamics import run_md , calculate_diffusion_coefficient
 from pymatgen.io.cif import CifWriter
 from pymatgen.core import Structure
 
@@ -27,15 +28,15 @@ with open(config_path, 'r') as file:
 class material_class:
     relaxed_cif_path: str
     unrelaxed_cif_path: str
+    trjaectory_files: List[str] = None
+    md_log_files: List[str] = None
     formation_energy: float = 0.0 
     bandgap: float = 0.0
     stable: bool = False
     insulator: bool = False
     diffusion_coefficient: float = 0.0
-    fit: bool = field(init=False)
+    fit: bool = False
 
-    def __post_init__(self):
-        self.fit = self.stable and self.insulator
 
 
 
@@ -55,6 +56,7 @@ def workflow(cif_file : str,  config: dict ) -> material_class:
 
     cif_writer = CifWriter(relaxed_structure)
     cif_writer.write_file(relaxed_cif_filename)
+
 
     # Perform formation energy prediction on the relaxed structure
     formation_energy = predict_formation_energy(relaxed_structure, config['model']['m3gnet'])
@@ -87,21 +89,50 @@ def workflow(cif_file : str,  config: dict ) -> material_class:
 
     #screening  - based on diffusion
     
-    if screen_result.fit:
+    if screen_result.insulator and screen_result.stable :
         print("The material fits the criteria.")
-        #diff_coeff = run_md
-        #screen_result.diffusion_coefficient = diff_coeff
+        screen_result.fit = True
+
+        
+        filename = relaxed_cif_filename.replace( "_relaxed.cif", "md.traj")   
+        traj_filename = filename.replace(config['data']['path']['relaxed_save_path'],config['data']['path']['md_traj_save_path'])
+        lof_file = traj_filename.replace( "md.traj", 'md.log')
+
+        traj_filename_list : List = []
+        lof_file_list : List = []
+        diffusion_coefficient_list : List = []
+
+
+        for temperature in config['workflow']['md_dynamics']['list_of_temp']:
+
+            traj_ = traj_filename.replace('.traj', f'_T{temperature}.traj')
+            lof_ = lof_file.replace('.log', f'_T{temperature}.log')
+  
+
+            config['workflow']['md_dynamics']['temperature'] = temperature
+            config['workflow']['md_dynamics']['trajectory'] = traj_
+            config['workflow']['md_dynamics']['logfile'] = lof_
+            run_md(config['workflow']['md_dynamics'] , relaxed_cif_filename)
+
+
+            traj_filename_list.append(traj_)
+            lof_file_list.append(lof_)  
+            diffusion_coefficient_list.append(calculate_diffusion_coefficient(traj_))
+            
+        screen_result.diffusion_coefficient = diffusion_coefficient_list
+        screen_result.md_log_files = lof_file_list
+        screen_result.trjaectory_files = traj_filename_list
+
+        return screen_result 
+    
+        
+       
 
     else:
         print("The material does not fit the criteria.")
         return screen_result
 
-    return screen_result 
-
-
-
-
-
+    
 
 
 
@@ -109,19 +140,19 @@ if __name__ == "__main__":
         
     materials,substituted_materials = prepare_folders(config_data['data']['path'] , config_data['data']['substitution'] )
 
-    # raw_cif_paths , substituted_cif_paths = substitute_materials(materials,substituted_materials,config_data['data']['path'] , config_data['data']['substitution'])
+    raw_cif_paths , substituted_cif_paths = substitute_materials(materials,substituted_materials,config_data['data']['path'] , config_data['data']['substitution'])
 
-    # print(raw_cif_paths)
-    # print(substituted_cif_paths)
+    print(raw_cif_paths)
+    print(substituted_cif_paths)
 
 
-    # results: List[material_class] = []
-    # for cif_file in substituted_cif_paths:
+    results: List[material_class] = []
+    for cif_file in substituted_cif_paths:
 
-    #     workflow_result =  workflow(substituted_cif_paths, config_data)
-    #     results.append(workflow_result)
+        workflow_result =  workflow(cif_file, config_data)
+        results.append(workflow_result)
 
-    # save_dataclass_list_to_json(results, config_data['data']['path']['results'])
+    save_dataclass_list_to_json(results, config_data['data']['path']['results'])
 
 
 
